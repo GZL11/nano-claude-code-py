@@ -2,6 +2,8 @@ import base64
 import json
 import os
 
+import pytest
+
 from nano_claude_code_py.tools.base import ToolContext
 from nano_claude_code_py.tools.file_tools import (
     FILE_UNCHANGED_STUB,
@@ -168,7 +170,7 @@ def test_read_returns_notebook_content_blocks(tmp_path):
 
 
 def test_read_extracts_pdf_text_for_small_documents(tmp_path):
-    fitz = __import__("fitz")
+    fitz = pytest.importorskip("fitz")
     path = tmp_path / "demo.pdf"
     document = fitz.open()
     page = document.new_page()
@@ -183,7 +185,7 @@ def test_read_extracts_pdf_text_for_small_documents(tmp_path):
 
 
 def test_read_rejects_large_pdf_without_pages_parameter(tmp_path):
-    fitz = __import__("fitz")
+    fitz = pytest.importorskip("fitz")
     path = tmp_path / "demo.pdf"
     document = fitz.open()
     for index in range(11):
@@ -201,7 +203,7 @@ def test_read_rejects_large_pdf_without_pages_parameter(tmp_path):
 
 
 def test_read_supports_pdf_page_ranges(tmp_path):
-    fitz = __import__("fitz")
+    fitz = pytest.importorskip("fitz")
     path = tmp_path / "demo.pdf"
     document = fitz.open()
     for index in range(3):
@@ -220,7 +222,7 @@ def test_read_supports_pdf_page_ranges(tmp_path):
 
 
 def test_read_does_not_return_unchanged_stub_for_repeated_pdf_reads(tmp_path):
-    fitz = __import__("fitz")
+    fitz = pytest.importorskip("fitz")
     path = tmp_path / "demo.pdf"
     document = fitz.open()
     page = document.new_page()
@@ -237,7 +239,7 @@ def test_read_does_not_return_unchanged_stub_for_repeated_pdf_reads(tmp_path):
 
 
 def test_read_rejects_invalid_pdf_pages_parameter(tmp_path):
-    fitz = __import__("fitz")
+    fitz = pytest.importorskip("fitz")
     path = tmp_path / "demo.pdf"
     document = fitz.open()
     document.new_page()
@@ -255,7 +257,7 @@ def test_read_rejects_invalid_pdf_pages_parameter(tmp_path):
 
 
 def test_read_does_not_reuse_pdf_stub_for_different_page_ranges(tmp_path):
-    fitz = __import__("fitz")
+    fitz = pytest.importorskip("fitz")
     path = tmp_path / "demo.pdf"
     document = fitz.open()
     for index in range(3):
