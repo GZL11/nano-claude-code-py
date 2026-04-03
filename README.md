@@ -23,6 +23,33 @@ work, shell execution, and multi-turn sessions.
 
 The first usable version is intentionally narrow.
 
+## What This Repo Reproduces
+
+This repository does not aim to reproduce all of Claude Code. It reproduces a
+small, source-aligned `nano` subset of the terminal agent workflow:
+
+- Interactive chat loop with local conversation state
+- One-shot execution mode
+- Anthropic Messages API integration
+- Streaming assistant output
+- Tool calling and tool-result turn loop
+- Local permissions with Claude Code-style nano modes
+- Claude Code-style core file and shell tools for the implemented subset
+- Local transcript persistence, resume, listing, and plaintext export
+
+For the implemented subset, the project explicitly aligns these areas with
+Claude Code source as closely as practical:
+
+- Tool names
+- Tool descriptions
+- Input schema fields
+- Core permission mode names
+- Common tool error flows
+- Read-before-write / Read-before-edit behavior
+- `Edit` versus `NotebookEdit` split
+- `TodoWrite` task state model
+- `Bash` readonly classification for the supported nano subset
+
 ### Core Features
 
 - Interactive REPL for multi-turn conversations
@@ -131,18 +158,28 @@ tests/
 ## Quick Start
 
 ```bash
-python -m venv .venv
+python -m venv --system-site-packages .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install --no-build-isolation -e ".[dev]"
 cp .env.example .env
 export ANTHROPIC_API_KEY=your_key_here
 nano-claude --help
 ```
 
-Run the REPL:
+The `--no-build-isolation` flag avoids unnecessary build-backend downloads in
+restricted or offline environments. The `--system-site-packages` venv option
+lets the editable install reuse already-available base packages when needed.
+
+Start interactive mode:
 
 ```bash
 nano-claude
+```
+
+Run a one-shot prompt:
+
+```bash
+nano-claude -p "summarize this repository"
 ```
 
 Resume the latest saved transcript:
@@ -184,11 +221,90 @@ Inside the REPL:
 /exit
 ```
 
-Run a one-shot prompt:
+## Configuration
+
+Configuration is environment-backed. The main settings are:
+
+- `ANTHROPIC_API_KEY`: required for model calls
+- `NANO_CLAUDE_LANGUAGE`: response language for the system prompt
+- `model`: default model name in code/config
+- `permission_mode`: one of `default`, `acceptEdits`, `bypassPermissions`, `dontAsk`, `plan`
+- `session_dir`: local transcript directory
+
+You can configure language at runtime or through environment variables.
+
+English:
 
 ```bash
-nano-claude -p "summarize this repository"
+export NANO_CLAUDE_LANGUAGE=english
+nano-claude
 ```
+
+Chinese:
+
+```bash
+export NANO_CLAUDE_LANGUAGE=zh
+nano-claude
+```
+
+Japanese:
+
+```bash
+export NANO_CLAUDE_LANGUAGE=ja
+nano-claude
+```
+
+Korean:
+
+```bash
+export NANO_CLAUDE_LANGUAGE=ko
+nano-claude
+```
+
+You can also switch language per invocation:
+
+```bash
+nano-claude --language zh
+nano-claude -p "请用中文总结这个仓库" --language zh
+nano-claude --language ja
+nano-claude --language ko
+```
+
+Supported language values include `english`, `zh`, `ja`, and `ko`.
+
+When Chinese, Japanese, or Korean mode is enabled, the agent is instructed to
+respond in that language while keeping code, commands, paths, and API
+identifiers in their original form.
+
+## Implemented Tools
+
+The current `nano` subset includes:
+
+- `Read`
+  - Text files
+  - Images
+  - Jupyter notebooks
+  - PDFs with page-range support
+- `Glob`
+- `Grep`
+- `TodoWrite`
+- `Write`
+- `Edit`
+- `NotebookEdit`
+- `Bash`
+
+## Current Limits
+
+These limits are intentional at the current `nano` stage:
+
+- No MCP
+- No plugin system
+- No multi-agent orchestration
+- No IDE integration
+- No remote execution
+- No voice mode
+- No rich TUI parity
+- `Bash` currently runs locally without sandboxing
 
 ## Development
 

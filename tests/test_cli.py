@@ -22,7 +22,12 @@ def test_root_command_defaults_to_chat(monkeypatch):
     assert called == [
         (
             "chat",
-            {"model": None, "permission_mode": None, "session_dir": None},
+            {
+                "model": None,
+                "language": None,
+                "permission_mode": None,
+                "session_dir": None,
+            },
         )
     ]
 
@@ -43,7 +48,12 @@ def test_root_command_supports_print_alias(monkeypatch):
         (
             "run",
             "hello",
-            {"model": None, "permission_mode": None, "session_dir": None},
+            {
+                "model": None,
+                "language": None,
+                "permission_mode": None,
+                "session_dir": None,
+            },
         )
     ]
 
@@ -61,7 +71,40 @@ def test_root_command_supports_resume_alias(monkeypatch):
 
     assert result.exit_code == 0
     assert called == [
-        ("resume", {"model": None, "permission_mode": None, "session_dir": None})
+        (
+            "resume",
+            {
+                "model": None,
+                "language": None,
+                "permission_mode": None,
+                "session_dir": None,
+            },
+        )
+    ]
+
+
+def test_root_command_propagates_language_option(monkeypatch):
+    called: list[tuple[str, object]] = []
+
+    monkeypatch.setattr(
+        cli,
+        "chat",
+        lambda **kwargs: called.append(("chat", kwargs)),
+    )
+
+    result = runner.invoke(app, ["--language", "zh"])
+
+    assert result.exit_code == 0
+    assert called == [
+        (
+            "chat",
+            {
+                "model": None,
+                "language": "zh",
+                "permission_mode": None,
+                "session_dir": None,
+            },
+        )
     ]
 
 

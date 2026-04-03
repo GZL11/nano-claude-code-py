@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling>=1.25.0"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "nano-claude-code-py"
@@ -29,8 +29,8 @@ dev = [
 [project.scripts]
 nano-claude = "nano_claude_code_py.main:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/nano_claude_code_py"]
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

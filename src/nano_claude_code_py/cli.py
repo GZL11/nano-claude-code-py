@@ -9,7 +9,7 @@ from nano_claude_code_py.config import Settings
 from nano_claude_code_py.llm.client import AnthropicModelClient
 from nano_claude_code_py.llm.tool_loop import run_turn
 from nano_claude_code_py.permissions import PermissionManager
-from nano_claude_code_py.prompts import SYSTEM_PROMPT
+from nano_claude_code_py.prompts import build_system_prompt
 from nano_claude_code_py.repl import format_permission_prompt, run_repl
 from nano_claude_code_py.session import (
     SessionTranscript,
@@ -50,6 +50,7 @@ def main_callback(
         help="Alias for --resume.",
     ),
     model: str | None = typer.Option(default=None),
+    language: str | None = typer.Option(default=None),
     permission_mode: str | None = typer.Option(default=None),
     session_dir: str | None = typer.Option(default=None),
 ) -> None:
@@ -60,6 +61,7 @@ def main_callback(
         run(
             prompt,
             model=model,
+            language=language,
             permission_mode=permission_mode,
             session_dir=session_dir,
         )
@@ -68,6 +70,7 @@ def main_callback(
     if resume_latest or continue_latest:
         resume(
             model=model,
+            language=language,
             permission_mode=permission_mode,
             session_dir=session_dir,
         )
@@ -75,6 +78,7 @@ def main_callback(
 
     chat(
         model=model,
+        language=language,
         permission_mode=permission_mode,
         session_dir=session_dir,
     )
@@ -83,6 +87,7 @@ def main_callback(
 @app.command()
 def chat(
     model: str | None = typer.Option(default=None),
+    language: str | None = typer.Option(default=None),
     permission_mode: str | None = typer.Option(default=None),
     resume: bool = typer.Option(default=False, help="Resume the latest transcript."),
     session_dir: str | None = typer.Option(default=None),
@@ -91,6 +96,8 @@ def chat(
     settings = Settings()
     if model is not None:
         settings.model = model
+    if language is not None:
+        settings.language = language
     if permission_mode is not None:
         settings.permission_mode = permission_mode
     if session_dir is not None:
@@ -108,6 +115,7 @@ def chat(
 def run(
     prompt: str,
     model: str | None = typer.Option(default=None),
+    language: str | None = typer.Option(default=None),
     permission_mode: str | None = typer.Option(default=None),
     session_dir: str | None = typer.Option(default=None),
 ) -> None:
@@ -115,6 +123,8 @@ def run(
     settings = Settings()
     if model is not None:
         settings.model = model
+    if language is not None:
+        settings.language = language
     if permission_mode is not None:
         settings.permission_mode = permission_mode
     if session_dir is not None:
@@ -139,7 +149,7 @@ def run(
         ),
         default_registry(),
         transcript.messages,
-        system_prompt=SYSTEM_PROMPT,
+        system_prompt=build_system_prompt(settings.language),
         tool_context=ToolContext(cwd=settings.cwd),
         permission_manager=permission_manager,
         console=console,
@@ -154,6 +164,7 @@ def run(
 @app.command()
 def resume(
     model: str | None = typer.Option(default=None),
+    language: str | None = typer.Option(default=None),
     permission_mode: str | None = typer.Option(default=None),
     session: str | None = typer.Option(
         default=None,
@@ -169,6 +180,8 @@ def resume(
     settings = Settings()
     if model is not None:
         settings.model = model
+    if language is not None:
+        settings.language = language
     if permission_mode is not None:
         settings.permission_mode = permission_mode
     if session_dir is not None:

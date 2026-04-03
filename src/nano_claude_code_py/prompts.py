@@ -1,4 +1,4 @@
-SYSTEM_PROMPT = """You are a minimal terminal coding agent.
+BASE_SYSTEM_PROMPT = """You are a minimal terminal coding agent.
 
 You can use these tools through the conversation:
 - Read: read a file from the local filesystem
@@ -33,3 +33,47 @@ Rules:
 - Never claim to have run a tool if you did not run it.
 - If a tool fails, explain the failure plainly and continue if possible.
 """
+
+LANGUAGE_DIRECTIVES = {
+    "english": (
+        "Always respond in English unless the user explicitly requests "
+        "another language."
+    ),
+    "chinese": (
+        "Always respond in Chinese. Keep code, file paths, commands, and "
+        "API identifiers in their original form unless the user asks "
+        "otherwise."
+    ),
+    "japanese": (
+        "Always respond in Japanese. Keep code, file paths, commands, and "
+        "API identifiers in their original form unless the user asks "
+        "otherwise."
+    ),
+    "korean": (
+        "Always respond in Korean. Keep code, file paths, commands, and "
+        "API identifiers in their original form unless the user asks "
+        "otherwise."
+    ),
+}
+
+
+def normalize_language(value: str | None) -> str:
+    if value is None:
+        return "english"
+    normalized = value.strip().lower()
+    if normalized in {"zh", "zh-cn", "zh-hans", "cn", "chinese", "中文"}:
+        return "chinese"
+    if normalized in {"ja", "ja-jp", "jp", "japanese", "日本語"}:
+        return "japanese"
+    if normalized in {"ko", "ko-kr", "kr", "korean", "한국어"}:
+        return "korean"
+    return "english"
+
+
+def build_system_prompt(language: str | None = None) -> str:
+    normalized = normalize_language(language)
+    directive = LANGUAGE_DIRECTIVES[normalized]
+    return BASE_SYSTEM_PROMPT.rstrip() + "\n- " + directive + "\n"
+
+
+SYSTEM_PROMPT = build_system_prompt()

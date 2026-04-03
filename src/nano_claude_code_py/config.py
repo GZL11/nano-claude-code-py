@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     anthropic_api_key: str | None = Field(default=None, alias="ANTHROPIC_API_KEY")
     model: str = "claude-sonnet-4-0"
+    language: str = Field(default="english", alias="NANO_CLAUDE_LANGUAGE")
     permission_mode: str = "default"
     session_dir: Path = Path.home() / ".nano-claude" / "sessions"
     cwd: Path = Path.cwd()

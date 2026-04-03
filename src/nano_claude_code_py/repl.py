@@ -6,7 +6,7 @@ from nano_claude_code_py.config import Settings
 from nano_claude_code_py.llm.client import AnthropicModelClient
 from nano_claude_code_py.llm.tool_loop import run_turn
 from nano_claude_code_py.permissions import PermissionManager
-from nano_claude_code_py.prompts import SYSTEM_PROMPT
+from nano_claude_code_py.prompts import build_system_prompt
 from nano_claude_code_py.session import (
     SessionTranscript,
     default_export_path,
@@ -87,7 +87,7 @@ def run_repl(
             client,
             registry,
             transcript.messages,
-            system_prompt=SYSTEM_PROMPT,
+            system_prompt=build_system_prompt(settings.language),
             tool_context=tool_context,
             permission_manager=permission_manager,
             console=console,
