@@ -29,5 +29,5 @@ class ToolCall(BaseModel):
 class ToolExecutionResult(BaseModel):
     call_id: str
     name: str
-    content: str
+    content: str | list[ContentBlock]
     is_error: bool = False

@@ -1,9 +1,68 @@
 from typer.testing import CliRunner
 
+from nano_claude_code_py import cli
 from nano_claude_code_py.cli import app
 from nano_claude_code_py.session import SessionTranscript, default_export_path
 
 runner = CliRunner()
+
+
+def test_root_command_defaults_to_chat(monkeypatch):
+    called: list[tuple[str, object]] = []
+
+    monkeypatch.setattr(
+        cli,
+        "chat",
+        lambda **kwargs: called.append(("chat", kwargs)),
+    )
+
+    result = runner.invoke(app, [])
+
+    assert result.exit_code == 0
+    assert called == [
+        (
+            "chat",
+            {"model": None, "permission_mode": None, "session_dir": None},
+        )
+    ]
+
+
+def test_root_command_supports_print_alias(monkeypatch):
+    called: list[tuple[str, object]] = []
+
+    monkeypatch.setattr(
+        cli,
+        "run",
+        lambda prompt, **kwargs: called.append(("run", prompt, kwargs)),
+    )
+
+    result = runner.invoke(app, ["-p", "hello"])
+
+    assert result.exit_code == 0
+    assert called == [
+        (
+            "run",
+            "hello",
+            {"model": None, "permission_mode": None, "session_dir": None},
+        )
+    ]
+
+
+def test_root_command_supports_resume_alias(monkeypatch):
+    called: list[tuple[str, object]] = []
+
+    monkeypatch.setattr(
+        cli,
+        "resume",
+        lambda **kwargs: called.append(("resume", kwargs)),
+    )
+
+    result = runner.invoke(app, ["--continue"])
+
+    assert result.exit_code == 0
+    assert called == [
+        ("resume", {"model": None, "permission_mode": None, "session_dir": None})
+    ]
 
 
 def test_sessions_command_lists_saved_sessions(tmp_path):

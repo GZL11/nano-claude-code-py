@@ -40,20 +40,24 @@ class ToolRegistry:
 def default_registry() -> ToolRegistry:
     from nano_claude_code_py.tools.file_tools import (
         EditFileTool,
+        GlobTool,
         GrepTool,
-        ListFilesTool,
         ReadFileTool,
         WriteFileTool,
     )
+    from nano_claude_code_py.tools.notebook_tools import NotebookEditTool
     from nano_claude_code_py.tools.shell_tools import RunShellTool
+    from nano_claude_code_py.tools.todo_tools import TodoWriteTool
 
     return ToolRegistry(
         [
             ReadFileTool(),
-            ListFilesTool(),
+            GlobTool(),
             GrepTool(),
+            TodoWriteTool(),
             WriteFileTool(),
             EditFileTool(),
+            NotebookEditTool(),
             RunShellTool(),
         ]
     )

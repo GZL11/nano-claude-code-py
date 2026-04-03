@@ -1,6 +1,12 @@
+import io
+
+from rich.console import Console
+
+import nano_claude_code_py.repl as repl_module
 from nano_claude_code_py.config import Settings
 from nano_claude_code_py.repl import (
     DEFAULT_HISTORY_LIMIT,
+    format_permission_prompt,
     handle_local_command,
     parse_export_path,
     parse_history_limit,
@@ -94,3 +100,35 @@ def test_save_command_persists_transcript(tmp_path):
     saved = SessionTranscript.load_jsonl(session_path)
     assert len(saved.messages) == 1
     assert saved.messages[0].text_content() == "hello"
+
+
+def test_help_command_lists_export(tmp_path):
+    transcript = SessionTranscript()
+    session_path = tmp_path / "20240102-000000.jsonl"
+    output = io.StringIO()
+    original_console = repl_module.console
+    repl_module.console = Console(file=output, force_terminal=False)
+    try:
+        handled = handle_local_command(
+            "/help",
+            transcript=transcript,
+            settings=Settings(session_dir=tmp_path, cwd=tmp_path),
+            session_path=session_path,
+            cwd=tmp_path,
+            registry=default_registry(),
+        )
+    finally:
+        repl_module.console = original_console
+
+    assert handled is True
+    rendered = output.getvalue().replace("\n", " ")
+    assert "/help" in rendered
+    assert "/export [path]" in rendered
+    assert "/exit" in rendered
+
+
+def test_format_permission_prompt_keeps_literal_confirmation_suffix():
+    assert (
+        format_permission_prompt("Bash [write/exec] git push")
+        == "Permission: Bash [write/exec] git push [y/N] "
+    )

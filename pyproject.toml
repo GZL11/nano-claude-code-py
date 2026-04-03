@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "nano-claude-code-py"
 version = "0.1.0"
-description = "An unofficial minimal terminal coding agent in Python."
+description = "A minimal terminal coding agent in Python with tool use, shell execution, and file editing."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }

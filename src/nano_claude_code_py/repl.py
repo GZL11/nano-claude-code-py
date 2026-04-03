@@ -18,6 +18,10 @@ from nano_claude_code_py.tools.registry import default_registry
 
 console = Console()
 DEFAULT_HISTORY_LIMIT = 10
+HELP_TEXT = (
+    "/help  /clear  /tools  /sessions  /session  /history [n]  /save  "
+    "/export [path]  /exit"
+)
 
 
 def run_repl(
@@ -29,6 +33,7 @@ def run_repl(
     transcript = transcript or SessionTranscript()
     registry = default_registry()
     session_path = session_path or default_session_path(settings.session_dir)
+    tool_context = ToolContext(cwd=settings.cwd)
     console.print("[bold]nano-claude-code-py[/bold]")
     console.print("Type /help for commands. Type /exit to quit.")
     if transcript.messages:
@@ -74,7 +79,7 @@ def run_repl(
         permission_manager = PermissionManager(
             mode=settings.permission_mode,
             prompt=lambda summary: console.input(
-                f"[permission] {summary} [y/N] "
+                format_permission_prompt(summary)
             ).strip().lower()
             in {"y", "yes"},
         )
@@ -83,7 +88,7 @@ def run_repl(
             registry,
             transcript.messages,
             system_prompt=SYSTEM_PROMPT,
-            tool_context=ToolContext(cwd=settings.cwd),
+            tool_context=tool_context,
             permission_manager=permission_manager,
             console=console,
             on_text=lambda text: console.print(text, end=""),
@@ -111,9 +116,7 @@ def handle_local_command(
         console.print("Transcript cleared.")
         return True
     if prompt == "/help":
-        console.print(
-            "/help  /clear  /tools  /sessions  /session  /history [n]  /save  /exit"
-        )
+        console.print(HELP_TEXT, markup=False)
         return True
     if prompt == "/tools":
         console.print("\n".join(registry.list_names()))
@@ -187,3 +190,7 @@ def render_session_summary(transcript: SessionTranscript, session_path, cwd) -> 
         f"message_count: {len(transcript.messages)}\n"
         f"workspace: {cwd}"
     )
+
+
+def format_permission_prompt(summary: str) -> str:
+    return f"Permission: {summary} [y/N] "

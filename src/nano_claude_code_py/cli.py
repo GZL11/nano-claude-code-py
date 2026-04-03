@@ -10,7 +10,7 @@ from nano_claude_code_py.llm.client import AnthropicModelClient
 from nano_claude_code_py.llm.tool_loop import run_turn
 from nano_claude_code_py.permissions import PermissionManager
 from nano_claude_code_py.prompts import SYSTEM_PROMPT
-from nano_claude_code_py.repl import run_repl
+from nano_claude_code_py.repl import format_permission_prompt, run_repl
 from nano_claude_code_py.session import (
     SessionTranscript,
     default_export_path,
@@ -22,8 +22,62 @@ from nano_claude_code_py.session import (
 from nano_claude_code_py.tools.base import ToolContext
 from nano_claude_code_py.tools.registry import default_registry
 
-app = typer.Typer(no_args_is_help=True, add_completion=False)
+app = typer.Typer(
+    no_args_is_help=False,
+    add_completion=False,
+    invoke_without_command=True,
+)
 console = Console()
+
+
+@app.callback()
+def main_callback(
+    ctx: typer.Context,
+    prompt: str | None = typer.Option(
+        None,
+        "--print",
+        "-p",
+        help="Run a single prompt and print the response.",
+    ),
+    resume_latest: bool = typer.Option(
+        False,
+        "--resume",
+        help="Resume the latest saved transcript.",
+    ),
+    continue_latest: bool = typer.Option(
+        False,
+        "--continue",
+        help="Alias for --resume.",
+    ),
+    model: str | None = typer.Option(default=None),
+    permission_mode: str | None = typer.Option(default=None),
+    session_dir: str | None = typer.Option(default=None),
+) -> None:
+    if ctx.invoked_subcommand is not None:
+        return
+
+    if prompt is not None:
+        run(
+            prompt,
+            model=model,
+            permission_mode=permission_mode,
+            session_dir=session_dir,
+        )
+        return
+
+    if resume_latest or continue_latest:
+        resume(
+            model=model,
+            permission_mode=permission_mode,
+            session_dir=session_dir,
+        )
+        return
+
+    chat(
+        model=model,
+        permission_mode=permission_mode,
+        session_dir=session_dir,
+    )
 
 
 @app.command()
@@ -74,7 +128,7 @@ def run(
     permission_manager = PermissionManager(
         mode=settings.permission_mode,
         prompt=lambda summary: console.input(
-            f"[permission] {summary} [y/N] "
+            format_permission_prompt(summary)
         ).strip().lower()
         in {"y", "yes"},
     )
